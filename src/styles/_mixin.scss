@@ -1,0 +1,36 @@
+@mixin container(){
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+@mixin flex($flex-direction, $align-item, $justify-content) {
+  display: flex;
+  flex-direction: $flex-direction;
+  align-items: $align-item;
+  justify-content: $justify-content;
+}
+
+@mixin button(){
+  background-color: #056a3f;
+  color: white;
+  padding: 1rem;
+  margin: 0.5rem;
+  font-weight: bold;
+  border-radius: 1rem;
+  transition: 0.3s;
+
+  &:hover{
+    background-color: #034d2d;
+  }
+}
+@mixin input(){
+  border-radius: 1rem;
+  padding: 0.5rem;
+
+  font-size: 1rem;
+  min-width: 100%;
+  resize: none;
+}
+
+

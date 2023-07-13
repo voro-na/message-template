@@ -1,0 +1,9 @@
+@import "./styles/_mixin.scss";
+
+.container{
+  @include container()
+}
+
+.btn{
+  @include button()
+}
