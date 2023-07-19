@@ -1,0 +1,24 @@
+@import "./../styles/_mixin.scss";
+
+.container {
+  @include flex(row, center, flex-end);
+  padding: 1rem;
+  gap: 0.5rem;
+  width: calc(100% - 100px);
+  align-content: flex-start;
+}
+
+.input {
+  @include input();
+}
+.btn{
+  @include button();
+  padding: 0.6rem;
+}
+.condition{
+  background-color: #056a3f;
+  padding: 0.5rem;
+  color: white;
+  font-weight: bold;
+  border-radius: 1rem;
+}

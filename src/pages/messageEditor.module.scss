@@ -5,7 +5,8 @@
 }
 
 .variablesBlock {
-  @include flex(row, center, center)
+  @include flex(row, center, center);
+
 }
 
 .variables {
@@ -14,4 +15,7 @@
 
 .input {
   @include input()
+}
+.btn{
+  @include button();
 }

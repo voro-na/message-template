@@ -1,7 +1,10 @@
-import React, {createContext, FC, useContext, useEffect, useState} from "react";
+import React, {FC, useEffect, useState} from "react";
 import styles from './messageEditor.module.scss'
-import IfThenElseBlock from "../components/ifThenElseBlock";
-import {InputContext} from './context';
+import InputBlock from "../components/inputBlock";
+import messageStore from "../store/messageStore";
+import {observer} from "mobx-react";
+import {createPortal} from "react-dom";
+import PreviewModal from "../components/previewModal";
 
 interface propsMessageEditor {
     arrVarNames: string[]
@@ -9,69 +12,87 @@ interface propsMessageEditor {
     callbackSave?: () => {}
 }
 
-const MessageEditor: FC<propsMessageEditor> = ({
-                                                   arrVarNames,
-                                                   template,
-                                                   callbackSave
-                                               }) => {
+interface state {
+    parent:  string,
+    value: string,
+    children: string[] | undefined,
+    id: string
+    condition: string,
+    level: number
+}
 
-    const [inputs, setInputs] = useState<string[]>(['', '']);
-    const [finalInputs, setFinalInputs] = useState<string[]>(['', '']);
-    const [isConditional, setIsConditional] = useState<boolean[]>([false, false]);
-    const [activeInput, setActiveInput] = useState({name: '', position: 0})
+const MessageEditor: FC<propsMessageEditor> = observer(({
+                                                            arrVarNames,
+                                                            template,
+                                                            callbackSave
+                                                        }) => {
 
-    const handleInputChange = (name: string, value: string) => {
-        setInputs(prevState => {
-            const newArray = [...prevState];
-            newArray[Number(name)] = value;
-            return newArray;
-        })
-        setFinalInputs(() => {
-            const newArray = [];
-            for(let i = 0; i < inputs.length; i ++){
-                newArray[i*2] = inputs[i]
-                newArray[i*2 + 1] = ''
+    const [activeInput, setActiveInput] = useState({id: '1', position: 0})
+    const [sortedInputs, setSortedInputs] = useState<Array<state>>([])
+    const [isPreview, setIsPreview] = useState(false)
+
+    useEffect(() =>{
+        createStateArr()
+    }, [])
+
+    let createStateArr = () => {
+        let arr: Array<state> = []
+        let dfs = (id: string) => {
+            if (id !== '0'){
+                arr.push(messageStore.messages[id])
             }
-            newArray[Number(name) * 2] = value;
-            //console.log(newArray)
-            return newArray;
-        })
-    };
-    const handleInputFocus = (name: string, position: React.MutableRefObject<any>) => {
-        setActiveInput({name: name, position: position.current.selectionStart})
-    }
+            let children = messageStore.messages[id].children ?? []
 
-    const handleButtonClick = (variable: string) => {
-
-        if (activeInput) {
-            setInputs((prevInputs) => {
-                const newArray = [...prevInputs];
-                let cursorPosition = activeInput.position
-                let content = prevInputs[Number(activeInput.name)] ?? ''
-
-                let newContent = content.slice(0, cursorPosition) + '{' + variable + '}' + content.slice(cursorPosition, content.length);
-                newArray[Number(activeInput.name)] = newContent
-
-                return [...newArray]
-            });
+            for (let childId of children) {
+                    dfs(childId)
+            }
         }
+        dfs('0')
+        setSortedInputs(arr)
+    }
+
+    const handleInputFocus = (id: string, position: React.MutableRefObject<any>) => {
+        setActiveInput({id: id, position: position.current.selectionStart})
+    }
+
+    const deleteMessages = (id: string) => {
+        messageStore.deleteGroup(id)
+        createStateArr()
+    }
+
+    const setInputValue = (id: string, value: string) => {
+        messageStore.setValue(id, value)
+    }
+
+    const handleAddVariableBtn = (variable: string) => {
+        let str = messageStore.messages[activeInput.id].value
+        let cursorPosition = activeInput.position
+
+        setInputValue(activeInput.id, str.slice(0, cursorPosition) + '{' + variable + '}' + str.slice(cursorPosition, str.length))
     };
 
-    const handleAddBtnClick = () => {
-      setIsConditional(prevState => {
-          let newArr = [...prevState];
-          newArr[Number(activeInput.name)] = !prevState[Number(activeInput.name)]
-          return newArr
-      })
-    }
-    const onFinalInputsChange = (index: number, newStr: string) =>{
-        setFinalInputs(prevState => {
-            let newArr = [...prevState];
-            newArr[index*2 + 1] = newStr
-            return newArr
-        })
-    }
+    const handleAddBlockBtn = () => {
+        let newId = Math.floor(Math.random() * (100000));
+        let cursorPosition = activeInput.position
+        let str = messageStore.messages[activeInput.id].value
+        let level = messageStore.messages[activeInput.id].level
 
+        messageStore.addChildren([String(newId + 1), String(newId + 2), String(newId + 3)], activeInput.id)
+        //messageStore.addChildren([String(newId + 4)], messageStore.messages[activeInput.id].parent)
+        messageStore.addChild(String(newId + 4), activeInput.id, messageStore.messages[activeInput.id].parent)
+
+        messageStore.addNewMsg('if', String(newId + 1), activeInput.id,level + 1)
+        messageStore.addNewMsg('then', String(newId + 2), activeInput.id, level + 1)
+        messageStore.addNewMsg('else', String(newId + 3), activeInput.id, level + 1)
+        messageStore.addNewMsg('', String(newId + 4), messageStore.messages[activeInput.id].parent, level)
+        //console.log( JSON.stringify(messageStore.messages))
+        setInputValue(activeInput.id, str.slice(0, cursorPosition))
+        setInputValue(String(newId + 4), str.slice(cursorPosition, str.length))
+        createStateArr()
+    }
+    const handlePreviewBtn = () =>{
+        setIsPreview(!isPreview)
+    }
     return <div className={styles.container}>
         <h1>Message Editor Template</h1>
 
@@ -79,29 +100,32 @@ const MessageEditor: FC<propsMessageEditor> = ({
             {arrVarNames.map((item, index) => (
                 <button key={index}
                         className={styles.variables}
-                        onClick={() => handleButtonClick(item)}>{`{${item}}`}</button>
+                        onClick={() => handleAddVariableBtn(item)}>{`{${item}}`}</button>
             ))}
         </div>
-        <button className={styles.variables} onClick={handleAddBtnClick}>
+        <button className={styles.variables}
+                onClick={handleAddBlockBtn}>
             Add if then else block
         </button>
-
-        <InputContext.Provider value={{inputs}}>
-
-            {inputs.map((item, index) => (
-
-                <IfThenElseBlock key={index}
-                                 onFocus={handleInputFocus}
-                                 onChange={handleInputChange}
-                                 name={String(index)}
-                                 value={inputs[index]}
-                                 isActive={isConditional[index]}
-                                 onConditionChange={onFinalInputsChange}/>
-            ))}
-            <div>{finalInputs}</div>
-
-        </InputContext.Provider>
+            {sortedInputs
+                .map((item) => (
+                    <InputBlock key={item.id}
+                                onFocus={handleInputFocus}
+                                onChange={setInputValue}
+                                id={item.id}
+                                value={item.value}
+                                condition={item.condition}
+                                level={item.level}
+                                deleteMessages={deleteMessages}/>
+                ))}
+        <div >
+            <button className={styles.btn} onClick={handlePreviewBtn}>Preview</button>
+            <button className={styles.btn}>Save</button>
+            <button className={styles.btn}>Close</button>
+        </div>
+        {isPreview && createPortal(<PreviewModal onClick={handlePreviewBtn} variables={arrVarNames}
+        template={messageStore.generateFinalMsg2()}/>, document.body)}
     </div>
-}
+})
 
 export default MessageEditor
