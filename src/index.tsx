@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import {RouterProvider, createBrowserRouter, createMemoryRouter} from 'react-router-dom';
 import './styles/index.css';
 
 import App from './App';
@@ -19,7 +19,7 @@ const saveToLocalStorage = (messages: Record<string, state>) => {
     localStorage.setItem('messages', JSON.stringify(messages))
 }
 
-const router = createBrowserRouter([
+const router = createMemoryRouter([
     {
         path: "/",
         element: <App/>,
