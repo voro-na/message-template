@@ -1,17 +1,23 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import './styles/index.css';
+
 import App from './App';
-import {createBrowserRouter, RouterProvider} from "react-router-dom";
-import ErrorPage from "./error-page";
-import MessageEditor from "./pages/messageEditor";
+import ErrorPage from './pages/error/error-page';
+import MessageEditor from './pages/messageEditor/messageEditor';
+import { state } from './types';
+
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
-let arrVarNames = ['firstname', 'lastname', 'company', 'position']
-let template = null
-let callbackSave: () => {}
+const arrVarNames = ['firstname', 'lastname', 'company', 'position']
+const template = null
+
+const saveToLocalStorage = (messages: Record<string, state>) => {
+    localStorage.setItem('messages', JSON.stringify(messages))
+}
 
 const router = createBrowserRouter([
     {
@@ -21,7 +27,7 @@ const router = createBrowserRouter([
     },
     {
         path: "messageEditor",
-        element: <MessageEditor arrVarNames={arrVarNames} template={template}/>,
+        element: <MessageEditor arrVarNames={arrVarNames} template={template} callbackSave={saveToLocalStorage}/>,
     },
 ]);
 

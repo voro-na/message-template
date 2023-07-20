@@ -1,4 +1,5 @@
 import React, {useLayoutEffect, useRef} from "react";
+
 import styles from './inputBlock.module.scss'
 
 const MIN_TEXTAREA_HEIGHT = 40;
@@ -17,19 +18,25 @@ const InputBlock = ({onFocus, onChange, value, id, condition, level, deleteMessa
     const textareaRef = useRef<any>(null);
     const maxWidth = `calc(100% - ${100 * (level + 1)}px)`
 
+    // Handle input change event for the textarea
     const handleInputChange = (event: React.FormEvent<HTMLTextAreaElement>) => {
         const {value} = event.currentTarget;
         onChange(id, value);
     };
 
+    // Handle selection change event for the textarea
     const handleSelectionChange = () => {
         if (textareaRef.current) {
             onFocus(id, textareaRef)
         }
     };
-    const onClickDelete = () => {
+
+    // Handle delete button click event
+    const onDeleteBtnClick = () => {
         deleteMessages(id)
     }
+
+    // Use layout effect to adjust the height of the textarea based on its content
     useLayoutEffect(() => {
         textareaRef.current.style.height = "inherit";
         textareaRef.current.style.height = `${Math.max(
@@ -43,7 +50,7 @@ const InputBlock = ({onFocus, onChange, value, id, condition, level, deleteMessa
             {condition && <div className={styles.condition}>{condition}</div>}
 
             {condition === 'if' && <button className={styles.btn}
-                                           onClick={onClickDelete}>delete</button>}
+                                           onClick={onDeleteBtnClick}>delete</button>}
 
             <textarea ref={textareaRef}
                       placeholder={'Input message'}

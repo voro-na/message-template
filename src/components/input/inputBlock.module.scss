@@ -1,7 +1,8 @@
-@import "./../styles/_mixin.scss";
+@import "../../styles/mixin";
 
 .container {
   @include flex(row, center, flex-end);
+
   padding: 1rem;
   gap: 0.5rem;
   width: calc(100% - 100px);
@@ -9,12 +10,15 @@
 }
 
 .input {
-  @include input();
+  @include input;
 }
+
 .btn{
-  @include button();
+  @include button;
+
   padding: 0.6rem;
 }
+
 .condition{
   background-color: #056a3f;
   padding: 0.5rem;

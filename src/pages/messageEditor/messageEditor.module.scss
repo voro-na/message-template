@@ -1,0 +1,22 @@
+@import "../../styles/mixin";
+
+.container {
+  @include container
+}
+
+.variablesBlock {
+  @include flex(row, center, center);
+
+}
+
+.variables {
+  @include button
+}
+
+.input {
+  @include input
+}
+
+.btn{
+  @include button;
+}
