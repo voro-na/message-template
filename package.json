@@ -1,7 +1,7 @@
 {
   "name": "message-template",
   "version": "0.1.0",
-  "homepage": "https://voro-na.github.io/message-template",
+  "homepage": "https://voro-na.github.io/message-template/",
   "private": true,
   "dependencies": {
     "@testing-library/user-event": "^13.5.0",
